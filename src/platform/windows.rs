@@ -1342,8 +1342,11 @@ pub fn copy_exe_cmd(src_exe: &str, exe: &str, path: &str) -> ResultType<String> 
     Ok(format!(
         "
         {main_exe}
+        {rename_exe}
+        if not exist \"{exe}\" exit /b 1
         copy /Y \"{ORIGIN_PROCESS_EXE}\" \"{path}\\{broker_exe}\"
         ",
+        rename_exe = rename_exe_cmd(src_exe, path)?,
         ORIGIN_PROCESS_EXE = win_topmost_window::ORIGIN_PROCESS_EXE,
         broker_exe = win_topmost_window::INJECTED_PROCESS_EXE,
     ))
@@ -1356,13 +1359,13 @@ pub fn rename_exe_cmd(src_exe: &str, path: &str) -> ResultType<String> {
         .ok_or(anyhow!("Can't get file name of {src_exe}"))?
         .to_string_lossy()
         .to_string();
-    let app_name = crate::get_app_name().to_lowercase();
-    if src_exe_filename.to_lowercase() == format!("{app_name}.exe") {
+    let app_name = crate::get_app_name();
+    if src_exe_filename.eq_ignore_ascii_case(&format!("{app_name}.exe")) {
         Ok("".to_owned())
     } else {
         Ok(format!(
             "
-        move /Y \"{path}\\{src_exe_filename}\" \"{path}\\{app_name}.exe\"
+        move /Y \"{path}\\{src_exe_filename}\" \"{path}\\{app_name}.exe\" || exit /b 1
         ",
         ))
     }
@@ -3165,7 +3168,6 @@ sc stop {app_name}
 taskkill /F /IM {app_name}.exe{filter}
 {reg_cmd}
 {copy_exe}
-{rename_exe}
 {remove_meta_toml}
 {restore_service_cmd}
 {uninstall_printer_cmd}
@@ -3174,7 +3176,6 @@ taskkill /F /IM {app_name}.exe{filter}
     ",
         app_name = app_name,
         copy_exe = copy_exe_cmd(&src_exe, &exe, &path)?,
-        rename_exe = rename_exe_cmd(&src_exe, &path)?,
         remove_meta_toml = remove_meta_toml_cmd(is_msi.unwrap_or(true), &path),
         sleep = if debug { "timeout 300" } else { "" },
     );
@@ -3448,7 +3449,7 @@ fn get_import_config(exe: &str) -> String {
     format!("
 sc stop {app_name}
 sc delete {app_name}
-sc create {app_name} binpath= \"\\\"{exe}\\\" --import-config \\\"{config_path}\\\"\" start= auto DisplayName= \"{app_name} Service\"
+sc create {app_name} binpath= \"\\\"{exe}\\\" --import-install-config \\\"{config_path}\\\"\" start= auto DisplayName= \"{app_name} Service\"
 sc start {app_name}
 sc stop {app_name}
 sc delete {app_name}

@@ -397,7 +397,7 @@ pub fn core_main() -> Option<Vec<String>> {
                 hbb_common::allow_err!(handler.join());
             }
             return None;
-        } else if args[0] == "--import-config" {
+        } else if args[0] == "--import-config" || args[0] == "--import-install-config" {
             if args.len() == 2 {
                 let filepath;
                 let path = std::path::Path::new(&args[1]);
@@ -408,7 +408,7 @@ pub fn core_main() -> Option<Vec<String>> {
                 } else {
                     filepath = path.to_str().unwrap().to_string();
                 }
-                import_config(&filepath);
+                import_config(&filepath, args[0] == "--import-install-config");
             }
             return None;
         } else if args[0] == "--password" {
@@ -703,7 +703,7 @@ fn init_plugins(args: &Vec<String>) {
     }
 }
 
-fn import_config(path: &str) {
+fn import_config(path: &str, installing_service: bool) {
     use hbb_common::{config::*, get_exe_time, get_modified_time};
     let path2 = path.replace(".toml", "2.toml");
     let path2 = std::path::Path::new(&path2);
@@ -714,11 +714,18 @@ fn import_config(path: &str) {
         log::info!("Empty source config, skipped");
         return;
     }
-    if get_modified_time(&path) > get_modified_time(&Config::file())
-        && get_modified_time(&path) < get_exe_time()
-    {
-        if store_path(Config::file(), config).is_err() {
-            log::info!("config written");
+    let destination = Config::file();
+    let import_identity = if installing_service {
+        // The first service installation inherits the portable identity.
+        // Subsequent installations keep the identity and password used by the service.
+        !destination.try_exists().unwrap_or(true)
+    } else {
+        get_modified_time(&path) > get_modified_time(&destination)
+            && get_modified_time(&path) < get_exe_time()
+    };
+    if import_identity {
+        if let Err(err) = store_path(destination, config) {
+            log::error!("Could not import identity: {err}");
         }
     }
     let config2: Config2 = load_path(path2.into());
