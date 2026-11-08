@@ -1363,6 +1363,8 @@ class RustdeskImpl {
     throw UnimplementedError("mainGetMouseTime");
   }
 
+  Future<String> mainWakeSavedPeer({required String id, dynamic hint}) async => 'unsupported';
+
   Future<void> mainWol({required String id, dynamic hint}) {
     throw UnimplementedError("mainWol");
   }

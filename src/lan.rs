@@ -84,24 +84,32 @@ pub async fn discover() -> ResultType<()> {
 }
 
 pub fn send_wol(id: String) {
-    let interfaces = default_net::get_interfaces();
-    for peer in &config::LanPeers::load().peers {
-        if peer.id == id {
-            for (_, mac) in peer.ip_mac.iter() {
-                if let Ok(mac_addr) = mac.parse() {
-                    for interface in &interfaces {
-                        for ipv4 in &interface.ipv4 {
-                            // remove below mask check to avoid unexpected bug
-                            // if (u32::from(ipv4.addr) & u32::from(ipv4.netmask)) == (u32::from(peer_ip) & u32::from(ipv4.netmask))
-                            log::info!("Send wol to {mac_addr} of {}", ipv4.addr);
-                            allow_err!(wol::send_wol(mac_addr, None, Some(IpAddr::V4(ipv4.addr))));
-                        }
-                    }
+    if let Err(e) = wake_saved_peer(&id) {
+        log::warn!("Wake-on-LAN: {e}");
+    }
+}
+
+pub fn wake_saved_peer(id: &str) -> ResultType<()> {
+    let peers = config::LanPeers::load();
+    let mut macs = HashSet::new();
+    for peer in peers.peers.iter().filter(|p| p.id == id) {
+        macs.extend(peer.ip_mac.values().cloned());
+    }
+    let macs: Vec<_> = macs.iter().filter_map(|m| m.parse().ok()).collect();
+    if macs.is_empty() { bail!("missing-mac"); }
+    let mut sent = false;
+    for interface in default_net::get_interfaces() {
+        for ipv4 in interface.ipv4 {
+            if ipv4.addr.is_loopback() { continue; }
+            for mac in &macs {
+                if wol::send_wol(*mac, None, Some(IpAddr::V4(ipv4.addr))).is_ok() {
+                    sent = true;
                 }
             }
-            break;
         }
     }
+    if !sent { bail!("send-failed"); }
+    Ok(())
 }
 
 #[inline]

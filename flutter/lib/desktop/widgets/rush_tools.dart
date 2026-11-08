@@ -7,7 +7,7 @@ import 'package:flutter_hbb/common.dart';
 import 'package:flutter_hbb/models/platform_model.dart';
 import '../pages/desktop_setting_page.dart';
 
-enum _Tool { peers, diagnose, prepare, updates }
+enum RushTool { peers, diagnose, prepare, updates }
 
 const _labels = [
   'Мои компьютеры',
@@ -22,6 +22,10 @@ const _icons = [
   Icons.system_update_alt
 ];
 
+Future<void> showRushTool(BuildContext context, RushTool tool) async {
+  await showDialog<void>(context: context, builder: (_) => _ToolDialog(tool));
+}
+
 class RushTools extends StatelessWidget {
   const RushTools({super.key});
 
@@ -29,9 +33,9 @@ class RushTools extends StatelessWidget {
   Widget build(BuildContext context) => Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          for (final tool in _Tool.values)
-            if ((tool != _Tool.peers || !bind.isIncomingOnly()) &&
-                (tool != _Tool.prepare || !bind.isOutgoingOnly()))
+          for (final tool in RushTool.values)
+            if ((tool != RushTool.peers || !bind.isIncomingOnly()) &&
+                (tool != RushTool.prepare || !bind.isOutgoingOnly()))
               TextButton(
                 onPressed: () => showDialog<void>(
                     context: context, builder: (_) => _ToolDialog(tool)),
@@ -46,7 +50,7 @@ class RushTools extends StatelessWidget {
 }
 
 class _ToolDialog extends StatefulWidget {
-  final _Tool tool;
+  final RushTool tool;
   const _ToolDialog(this.tool);
   @override
   State<_ToolDialog> createState() => _ToolState();
@@ -115,14 +119,14 @@ class _ToolState extends State<_ToolDialog> {
 
   Future<void> refresh() async {
     switch (widget.tool) {
-      case _Tool.peers:
+      case RushTool.peers:
         final favorites = await bind.mainGetFav();
         peers.clear();
         for (final peer in favorites) {
           peers[peer] = bind.mainGetPeerOptionSync(id: peer, key: 'alias');
         }
         break;
-      case _Tool.diagnose:
+      case RushTool.diagnose:
         final host = bind.mainGetOptionSync(key: 'custom-rendezvous-server');
         final relay = bind.mainGetOptionSync(key: 'relay-server');
         final status = jsonDecode(await bind.mainGetConnectStatus());
@@ -158,7 +162,7 @@ class _ToolState extends State<_ToolDialog> {
         }
         result = lines.join('\n');
         break;
-      case _Tool.prepare:
+      case RushTool.prepare:
         final password = (await bind.mainGetPermanentPassword()).isNotEmpty;
         final mode = bind.mainGetOptionSync(key: 'approve-mode');
         final method = bind.mainGetOptionSync(key: 'verification-method');
@@ -167,7 +171,7 @@ class _ToolState extends State<_ToolDialog> {
             '3. Вход без подтверждения: ${mode == "password" && method != "use-temporary-password" && password ? "настроен" : "проверьте настройки безопасности"}\n\n'
             'Для входа в отсутствие владельца выберите подтверждение по паролю и задайте уникальный постоянный пароль этому ПК.';
         break;
-      case _Tool.updates:
+      case RushTool.updates:
         if (!bind.mainIsInstalled()) {
           result = 'Установите клиент, чтобы служба могла обновлять его.';
           break;
@@ -246,7 +250,7 @@ class _ToolState extends State<_ToolDialog> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                  if (widget.tool == _Tool.peers) ...[
+                  if (widget.tool == RushTool.peers) ...[
                     TextField(
                         controller: name,
                         decoration: const InputDecoration(
@@ -277,7 +281,7 @@ class _ToolState extends State<_ToolDialog> {
                   ],
                   if (busy) const LinearProgressIndicator(),
                   if (result.isNotEmpty) SelectableText(result),
-                  if (widget.tool == _Tool.prepare) ...[
+                  if (widget.tool == RushTool.prepare) ...[
                     if (!bind.mainIsInstalled() &&
                         !bind.isDisableInstallation())
                       TextButton(
@@ -304,7 +308,7 @@ class _ToolState extends State<_ToolDialog> {
                         },
                         child: const Text('Скопировать имя и ID')),
                   ],
-                  if (widget.tool == _Tool.diagnose && result.isNotEmpty)
+                  if (widget.tool == RushTool.diagnose && result.isNotEmpty)
                     TextButton(
                         onPressed: () async {
                           await Clipboard.setData(ClipboardData(text: result));

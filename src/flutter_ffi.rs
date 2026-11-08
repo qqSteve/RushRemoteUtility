@@ -2109,6 +2109,18 @@ pub fn main_wol(id: String) {
     crate::lan::send_wol(id)
 }
 
+pub fn main_wake_saved_peer(id: String) -> String {
+    #[cfg(target_os = "windows")]
+    {
+        match crate::lan::wake_saved_peer(&id) {
+            Ok(()) => "sent".into(),
+            Err(e) => e.to_string(),
+        }
+    }
+    #[cfg(not(target_os = "windows"))]
+    { let _ = id; "unsupported".into() }
+}
+
 pub fn main_create_shortcut(_id: String) {
     #[cfg(windows)]
     create_shortcut(_id);
