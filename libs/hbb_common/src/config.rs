@@ -64,6 +64,7 @@ lazy_static::lazy_static! {
     pub static ref NEW_STORED_PEER_CONFIG: Mutex<HashSet<String>> = Default::default();
     pub static ref DEFAULT_SETTINGS: RwLock<HashMap<String, String>> = {
         let mut settings = HashMap::new();
+        settings.insert("allow-auto-update".to_owned(), "Y".to_owned());
         if let (Some(host), Some(key)) = (option_env!("RUSH_SERVER"), option_env!("RUSH_PUBLIC_KEY")) {
             settings.insert("custom-rendezvous-server".to_owned(), host.to_owned());
             settings.insert("key".to_owned(), key.to_owned());

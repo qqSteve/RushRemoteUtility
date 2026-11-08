@@ -11,7 +11,7 @@ use std::{
     time::{Duration, Instant},
 };
 
-enum UpdateMsg {
+pub(crate) enum UpdateMsg {
     CheckUpdate,
     Exit,
 }
@@ -47,7 +47,7 @@ pub fn stop_auto_update() {
 }
 
 #[inline]
-fn has_no_active_conns() -> bool {
+pub(crate) fn has_no_active_conns() -> bool {
     let conns = crate::Connection::alive_conns();
     conns.is_empty() && has_no_controlling_conns()
 }
@@ -82,6 +82,10 @@ fn start_auto_update_check() -> Sender<UpdateMsg> {
 }
 
 fn start_auto_update_check_(rx_msg: Receiver<UpdateMsg>) {
+    #[cfg(windows)]
+    if crate::get_app_name() == "RushRemoteUtility" {
+        return crate::rush_updates::worker(rx_msg);
+    }
     std::thread::sleep(Duration::from_secs(30));
     if let Err(e) = check_update(false) {
         log::error!("Error checking for updates: {}", e);

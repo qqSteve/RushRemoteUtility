@@ -299,6 +299,8 @@ pub enum Data {
     FileTransferLog((String, String)),
     #[cfg(windows)]
     ControlledSessionCount(usize),
+    #[cfg(windows)]
+    RushUpdateIdle(bool),
     CmErr(String),
     // CM-side file reading responses (Windows only)
     // These are sent from CM back to Connection when CM handles file reading
@@ -748,6 +750,10 @@ async fn handle(data: Data, stream: &mut Connection) {
         #[cfg(all(feature = "flutter", feature = "plugin_framework"))]
         #[cfg(not(any(target_os = "android", target_os = "ios")))]
         Data::Plugin(plugin) => crate::plugin::ipc::handle_plugin(plugin, stream).await,
+        #[cfg(windows)]
+        Data::RushUpdateIdle(_) => {
+            allow_err!(stream.send(&Data::RushUpdateIdle(crate::updater::has_no_active_conns())).await);
+        }
         #[cfg(windows)]
         Data::ControlledSessionCount(_) => {
             allow_err!(
@@ -1586,4 +1592,12 @@ mod test {
         println!("{}", std::mem::size_of::<Data>());
         assert!(std::mem::size_of::<Data>() <= 120);
     }
+}
+
+#[cfg(windows)]
+#[tokio::main(flavor = "current_thread")]
+pub async fn rush_update_idle() -> ResultType<bool> {
+    let mut c = connect(1500, "").await?;
+    c.send(&Data::RushUpdateIdle(false)).await?;
+    Ok(matches!(c.next_timeout(1500).await?, Some(Data::RushUpdateIdle(true))))
 }

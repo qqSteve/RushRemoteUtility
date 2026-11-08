@@ -32,6 +32,10 @@ pub fn core_main() -> Option<Vec<String>> {
     if !crate::common::global_init() {
         return None;
     }
+    #[cfg(windows)]
+    if std::env::args().nth(1).as_deref() == Some("--rush-update-idle") {
+        std::process::exit(if crate::ipc::rush_update_idle().unwrap_or(false) { 0 } else { 2 });
+    }
     crate::load_custom_client();
     #[cfg(windows)]
     if !crate::platform::windows::bootstrap() {

@@ -25,6 +25,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:window_size/window_size.dart' as window_size;
 import '../widgets/button.dart';
+import '../widgets/rush_tools.dart';
 
 class DesktopHomePage extends StatefulWidget {
   const DesktopHomePage({Key? key}) : super(key: key);
@@ -111,6 +112,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           }
         },
       ),
+      if (isWindows) const RushTools(),
       buildPluginEntry(),
     ];
     if (isIncomingOnly) {
@@ -137,14 +139,13 @@ class _DesktopHomePageState extends State<DesktopHomePage>
           children: [
             Column(
               children: [
-                SingleChildScrollView(
+                Flexible(child: SingleChildScrollView(
                   controller: _leftPaneScrollController,
                   child: Column(
                     key: _childKey,
                     children: children,
                   ),
-                ),
-                Expanded(child: Container())
+                )),
               ],
             ),
             if (isOutgoingOnly)
