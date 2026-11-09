@@ -27,8 +27,8 @@ import 'package:url_launcher/url_launcher_string.dart';
 import '../../common/widgets/dialog.dart';
 import '../../common/widgets/login.dart';
 
-const double _kTabWidth = 200;
-const double _kTabHeight = 42;
+const double _kTabWidth = 216;
+const double _kTabHeight = 46;
 const double _kCardFixedWidth = 540;
 const double _kCardLeftMargin = 15;
 const double _kContentHMargin = 15;
@@ -355,10 +355,15 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
   Widget _listItem({required _TabInfo tab}) {
     return Obx(() {
       bool selected = tab.key == selectedTab.value;
-      return SizedBox(
-        width: _kTabWidth,
-        height: _kTabHeight,
-        child: InkWell(
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+        child: Material(
+          color: selected ? const Color(0xFF35251A) : Colors.transparent,
+          borderRadius: BorderRadius.circular(9),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+          hoverColor: const Color(0xFF292B30),
+          splashFactory: NoSplash.splashFactory,
           onTap: () {
             if (selectedTab.value != tab.key) {
               int index = DesktopSettingPage.tabKeys.indexOf(tab.key);
@@ -371,9 +376,9 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
           },
           child: Row(children: [
             Container(
-              width: 4,
-              height: _kTabHeight * 0.7,
-              color: selected ? _accentColor : null,
+              width: 3,
+              height: _kTabHeight * 0.65,
+              color: selected ? _accentColor : Colors.transparent,
             ),
             Icon(
               selected ? tab.selected : tab.unselected,
@@ -388,6 +393,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
                   fontSize: _kContentFontSize),
             ),
           ]),
+        ),
         ),
       );
     });
