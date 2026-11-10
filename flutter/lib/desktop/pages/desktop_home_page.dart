@@ -257,12 +257,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                       ),
                     ),
                     onTap: () => {
-                      if (outgoingOnly)
-                Tooltip(message: 'Диагностика', child: TextButton(
-                  onPressed: () => showRushTool(context, RushTool.diagnose),
-                  child: const Icon(Icons.monitor_heart_outlined),
-                )),
-              if (DesktopSettingPage.tabKeys.isNotEmpty)
+                      if (DesktopSettingPage.tabKeys.isNotEmpty)
                         {
                           DesktopSettingPage.switch2page(
                               DesktopSettingPage.tabKeys[0])
