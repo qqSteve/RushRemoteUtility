@@ -382,13 +382,14 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
               color: selected ? _accentColor : null,
               size: 20,
             ).marginOnly(left: 13, right: 10),
-            Text(
+            Flexible(child: Text(
               translate(tab.label),
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   color: selected ? _accentColor : null,
                   fontWeight: FontWeight.w600,
                   fontSize: _kContentFontSize),
-            ),
+            )),
           ]),
         ),
       ));

@@ -168,16 +168,22 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final isOutgoingOnly = bind.isOutgoingOnly();
     final children = <Widget>[
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
-      if (bind.isCustomClient())
-        Align(
-          alignment: Alignment.center,
-          child: loadPowered(context),
-        ),
-      Align(
-        alignment: Alignment.center,
-        child: loadLogo(),
-      ),
-      buildTip(context),
+      if (isWindows)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+          child: Row(children: [
+            Image.asset('assets/rush-brand.webp', width: 32, height: 32),
+            const SizedBox(width: 10),
+            const Expanded(child: Text('RushRemoteUtility',
+                style: TextStyle(fontWeight: FontWeight.w600))),
+          ]),
+        )
+      else ...[
+        if (bind.isCustomClient())
+          Align(alignment: Alignment.center, child: loadPowered(context)),
+        Align(alignment: Alignment.center, child: loadLogo()),
+        buildTip(context),
+      ],
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
       FutureBuilder<Widget>(
