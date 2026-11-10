@@ -46,10 +46,20 @@ class RushDashboard extends StatelessWidget {
   Widget utility(
           RushAction action, IconData icon, String label, bool compact) =>
       compact
-          ? IconButton(
-              tooltip: label,
-              onPressed: () => onAction(action),
-              icon: Icon(icon))
+          ? Tooltip(
+              message: label,
+              child: TextButton(
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(42, 40),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(7),
+                  ),
+                ),
+                onPressed: () => onAction(action),
+                child: Icon(icon, size: 21),
+              ),
+            )
           : TextButton.icon(
               onPressed: () => onAction(action),
               icon: Icon(icon, size: 18),

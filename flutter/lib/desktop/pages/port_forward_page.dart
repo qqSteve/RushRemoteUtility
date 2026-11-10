@@ -132,7 +132,7 @@ class _PortForwardPageState extends State<PortForwardPage>
           offstage: pfs.isEmpty && !widget.isRDP,
           child: Container(
               height: 45,
-              color: const Color(0xFF007F00),
+              color: Theme.of(context).cardColor,
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

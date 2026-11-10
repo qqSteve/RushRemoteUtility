@@ -35,7 +35,7 @@ class DesktopHomePage extends StatefulWidget {
   State<DesktopHomePage> createState() => _DesktopHomePageState();
 }
 
-const borderColor = Color(0xFF2F65BA);
+const borderColor = MyTheme.accent;
 
 class _DesktopHomePageState extends State<DesktopHomePage>
     with AutomaticKeepAliveClientMixin, WidgetsBindingObserver {
@@ -67,6 +67,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     if (dashboard && !showClassic) {
       return _buildBlock(child: RushHome(openClassic: () => setState(() => showClassic = true)));
     }
+    if (isWindows && !isIncomingOnly) {
+      return _buildBlock(child: _accessPage(context, dashboard));
+    }
     final classic = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -75,12 +78,84 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         if (!isIncomingOnly) Expanded(child: buildRightPane(context)),
       ],
     );
-    return _buildBlock(child: dashboard ? Column(children:[
-      Align(alignment: Alignment.centerLeft, child: TextButton.icon(
-        icon: const Icon(Icons.arrow_back), label: const Text('Мои компьютеры'),
-        onPressed: () => setState(() => showClassic = false))),
-      Expanded(child:classic),
-    ]) : classic);
+    return _buildBlock(child: classic);
+  }
+
+  Widget _accessPage(BuildContext context, bool canReturn) {
+    final outgoingOnly = bind.isOutgoingOnly();
+    final access = ChangeNotifierProvider.value(
+      value: gFFI.serverModel,
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(translate('Your Desktop'),
+                    style: Theme.of(context).textTheme.titleLarge),
+              ),
+              const SizedBox(height: 12),
+              buildPresetPasswordWarning(),
+              buildIDBoard(context),
+              buildPasswordBoard(context),
+              Obx(() => buildHelpCards(stateGlobal.updateUrl.value)),
+              buildPluginEntry(),
+            ],
+          ),
+        ),
+      ),
+    );
+    return Material(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(children: [
+              if (canReturn)
+                Tooltip(message: 'Мои компьютеры', child: TextButton(
+                  onPressed: () => setState(() => showClassic = false),
+                  child: const Icon(Icons.arrow_back),
+                )),
+              const SizedBox(width: 8),
+              const Expanded(child: Text('Подключения и доступ',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700))),
+              if (DesktopSettingPage.tabKeys.isNotEmpty)
+                Tooltip(message: translate('Settings'), child: TextButton(
+                  onPressed: () => DesktopSettingPage.switch2page(DesktopSettingPage.tabKeys.first),
+                  child: const Icon(Icons.settings_outlined),
+                )),
+            ]),
+            const SizedBox(height: 12),
+            Expanded(child: LayoutBuilder(builder: (context, box) {
+              final connection = buildRightPane(context);
+              if (outgoingOnly) {
+                return Column(children: [
+                  Expanded(child: connection),
+                  const RushTools(),
+                ]);
+              }
+              if (box.maxWidth < 760) {
+                return Column(children: [
+                  ConstrainedBox(constraints: BoxConstraints(maxHeight: box.maxHeight * .35),
+                    child: SizedBox(width: double.infinity, child: access)),
+                  Expanded(child: connection),
+                ]);
+              }
+              return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                SizedBox(width: 264, child: access),
+                const SizedBox(width: 12),
+                Expanded(child: connection),
+              ]);
+            })),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildBlock({required Widget child}) {
@@ -93,16 +168,22 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     final isOutgoingOnly = bind.isOutgoingOnly();
     final children = <Widget>[
       if (!isOutgoingOnly) buildPresetPasswordWarning(),
-      if (bind.isCustomClient())
-        Align(
-          alignment: Alignment.center,
-          child: loadPowered(context),
-        ),
-      Align(
-        alignment: Alignment.center,
-        child: loadLogo(),
-      ),
-      buildTip(context),
+      if (isWindows)
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 12),
+          child: Row(children: [
+            Image.asset('assets/rush-brand.webp', width: 32, height: 32),
+            const SizedBox(width: 10),
+            const Expanded(child: Text('RushRemoteUtility',
+                style: TextStyle(fontWeight: FontWeight.w600))),
+          ]),
+        )
+      else ...[
+        if (bind.isCustomClient())
+          Align(alignment: Alignment.center, child: loadPowered(context)),
+        Align(alignment: Alignment.center, child: loadLogo()),
+        buildTip(context),
+      ],
       if (!isOutgoingOnly) buildIDBoard(context),
       if (!isOutgoingOnly) buildPasswordBoard(context),
       FutureBuilder<Widget>(
@@ -192,7 +273,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     );
   }
 
-  buildRightPane(BuildContext context) {
+  Widget buildRightPane(BuildContext context) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: ConnectionPage(),
@@ -618,14 +699,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
               0, marginTop, 0, bind.isIncomingOnly() ? marginTop : 0),
           child: Container(
               decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-                colors: [
-                  Color.fromARGB(255, 226, 66, 188),
-                  Color.fromARGB(255, 244, 114, 124),
-                ],
-              )),
+                color: Theme.of(context).cardColor,
+                border: Border(left: BorderSide(color: MyTheme.accent, width: 3)),
+              ),
               padding: EdgeInsets.all(20),
               child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,

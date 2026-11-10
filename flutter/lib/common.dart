@@ -251,16 +251,16 @@ class MyTheme {
   MyTheme._();
 
   static const Color grayBg = Color(0xFFEFEFF2);
-  static const Color accent = Color(0xFF0071FF);
-  static const Color accent50 = Color(0x770071FF);
-  static const Color accent80 = Color(0xAA0071FF);
+  static const Color accent = Color(0xFFFF8B2B);
+  static const Color accent50 = Color(0x77FF8B2B);
+  static const Color accent80 = Color(0xAAFF8B2B);
   static const Color canvasColor = Color(0xFF212121);
   static const Color border = Color(0xFFCCCCCC);
-  static const Color idColor = Color(0xFF00B6F0);
+  static const Color idColor = Color(0xFFFFA960);
   static const Color darkGray = Color.fromARGB(255, 148, 148, 148);
   static const Color cmIdColor = Color(0xFF21790B);
   static const Color dark = Colors.black87;
-  static const Color button = Color(0xFF2C8CFF);
+  static const Color button = Color(0xFFFF8B2B);
   static const Color hoverBorder = Color(0xFF999999);
 
   // ListTile
@@ -578,7 +578,60 @@ class MyTheme {
     ],
   );
 
+  static final ThemeData graphiteTheme = darkTheme.copyWith(
+    primaryColor: accent,
+    canvasColor: const Color(0xff191b20),
+    cardColor: const Color(0xff191b20),
+    scaffoldBackgroundColor: const Color(0xff101114),
+    dialogBackgroundColor: const Color(0xff191b20),
+    dividerColor: const Color(0xff383b42),
+    hoverColor: const Color(0xff33271e),
+    colorScheme: const ColorScheme.dark(
+      primary: accent, onPrimary: Color(0xff15110d),
+      secondary: accent, onSecondary: Color(0xff15110d),
+      surface: Color(0xff191b20), background: Color(0xff101114),
+    ),
+    cardTheme: CardTheme(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: Color(0xff383b42)),
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        elevation: 0, backgroundColor: accent,
+        foregroundColor: const Color(0xff15110d),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom(
+        foregroundColor: const Color(0xfff4f4f4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    ),
+    appBarTheme: const AppBarTheme(
+      elevation: 0, backgroundColor: Color(0xff191b20),
+      foregroundColor: Color(0xfff4f4f4),
+    ),
+    tooltipTheme: TooltipThemeData(
+      decoration: BoxDecoration(color: const Color(0xff292b30),
+        border: Border.all(color: const Color(0xff484b51)),
+        borderRadius: BorderRadius.circular(6)),
+      textStyle: const TextStyle(color: Colors.white, fontSize: 12),
+    ),
+    inputDecorationTheme: darkTheme.inputDecorationTheme.copyWith(
+      fillColor: const Color(0xff212328),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(8),
+        borderSide: const BorderSide(color: accent),
+      ),
+    ),
+  );
+
   static ThemeMode getThemeModePreference() {
+    if (isWindows) return ThemeMode.dark;
     return themeModeFromString(bind.mainGetLocalOption(key: kCommConfKeyTheme));
   }
 
@@ -1141,7 +1194,7 @@ Widget createDialogContent(String text) {
     spans.add(TextSpan(
       text: match.group(0) ?? '',
       style: const TextStyle(
-        color: Colors.blue,
+        color: MyTheme.accent,
         decoration: TextDecoration.underline,
       ),
       recognizer: TapGestureRecognizer()
@@ -1270,7 +1323,7 @@ Color? _msgboxColor(String type) {
   if (type.contains("error") || type == "re-input-password") {
     return Color(0xFFE04F5F);
   }
-  return Color(0xFF2C8CFF);
+  return Color(0xFFFF8B2B);
 }
 
 Widget msgboxIcon(String type) {

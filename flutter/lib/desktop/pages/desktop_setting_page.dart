@@ -281,7 +281,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
       body: _buildBlock(
         children: <Widget>[
           SizedBox(
-            width: _kTabWidth,
+            width: isWindows && MediaQuery.sizeOf(context).width < 800 ? 152 : _kTabWidth,
             child: Column(
               children: [
                 _header(context),
@@ -312,7 +312,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
       style: const TextStyle(
         color: _accentColor,
         fontSize: _kTitleFontSize,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w600,
       ),
     );
     return Row(
@@ -326,20 +326,11 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
             },
             icon: Icon(Icons.arrow_back),
           ).marginOnly(left: 5),
-        if (isWeb)
-          SizedBox(
-            height: 62,
-            child: Align(
-              alignment: Alignment.center,
-              child: settingsText,
-            ),
-          ).marginOnly(left: 20),
-        if (!isWeb)
-          SizedBox(
-            height: 62,
-            child: settingsText,
-          ).marginOnly(left: 20, top: 10),
-        const Spacer(),
+        Expanded(child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SizedBox(height: 62, child: Align(
+            alignment: Alignment.centerLeft, child: settingsText)),
+        )),
       ],
     );
   }
@@ -358,7 +349,9 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
       return SizedBox(
         width: _kTabWidth,
         height: _kTabHeight,
-        child: InkWell(
+        child: Material(
+          color: selected && isWindows ? const Color(0xff35251a) : Colors.transparent,
+          child: InkWell(
           onTap: () {
             if (selectedTab.value != tab.key) {
               int index = DesktopSettingPage.tabKeys.indexOf(tab.key);
@@ -380,16 +373,17 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
               color: selected ? _accentColor : null,
               size: 20,
             ).marginOnly(left: 13, right: 10),
-            Text(
+            Flexible(child: Text(
               translate(tab.label),
+              overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   color: selected ? _accentColor : null,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w600,
                   fontSize: _kContentFontSize),
-            ),
+            )),
           ]),
         ),
-      );
+      ));
     });
   }
 }
@@ -415,7 +409,7 @@ class _GeneralState extends State<_General> {
       controller: scrollController,
       children: [
         if (!isWeb) service(),
-        theme(),
+        if (!isWindows) theme(),
         _Card(title: 'Language', children: [language()]),
         if (!isWeb) hwcodec(),
         if (!isWeb) audio(context),
@@ -1573,31 +1567,15 @@ class _NetworkState extends State<_Network> with AutomaticKeepAliveClientMixin {
       String tooltipMessage = '',
     }) {
       final titleWidget = showTooltip
-          ? Row(
-              children: [
-                Tooltip(
-                  waitDuration: Duration(milliseconds: 1000),
-                  message: translate(tooltipMessage),
-                  child: Row(
-                    children: [
-                      Text(
-                        translate(title),
-                        style: TextStyle(fontSize: _kContentFontSize),
-                      ),
-                      SizedBox(width: 5),
-                      Icon(
-                        Icons.help_outline,
-                        size: 14,
-                        color: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.color
-                            ?.withOpacity(0.7),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          ? Tooltip(
+              waitDuration: const Duration(seconds: 1),
+              message: translate(tooltipMessage),
+              child: Wrap(spacing: 5, crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(translate(title), style: const TextStyle(fontSize: _kContentFontSize)),
+                  Icon(Icons.help_outline, size: 14,
+                    color: Theme.of(context).textTheme.titleLarge?.color?.withOpacity(0.7)),
+                ]),
             )
           : Text(
               translate(title),
@@ -2360,7 +2338,7 @@ class _AboutState extends State<_About> {
       final scrollController = ScrollController();
       return SingleChildScrollView(
         controller: scrollController,
-        child: _Card(title: translate('About RustDesk'), children: [
+        child: _Card(title: isWindows ? 'RushRemoteUtility' : translate('About RustDesk'), children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -2394,7 +2372,7 @@ class _AboutState extends State<_About> {
                     style: linkStyle,
                   ).marginSymmetric(vertical: 4.0)),
               Container(
-                decoration: const BoxDecoration(color: Color(0xFF2c8cff)),
+                decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
                 padding:
                     const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
                 child: SelectionArea(
@@ -2441,7 +2419,7 @@ Widget _Card(
     children: [
       Flexible(
         child: SizedBox(
-          width: _kCardFixedWidth,
+          width: isWindows ? double.infinity : _kCardFixedWidth,
           child: Card(
             child: Column(
               children: [
@@ -2748,14 +2726,12 @@ Widget _Button(String label, Function() onPressed,
   } else {
     child = Tooltip(message: translate(tip), child: button);
   }
-  return Row(children: [
-    child,
-  ]).marginOnly(left: _kContentHMargin);
+  return Align(alignment: Alignment.centerLeft, child: child).marginOnly(left: _kContentHMargin);
 }
 
 // ignore: non_constant_identifier_names
 Widget _SubButton(String label, Function() onPressed, [bool enabled = true]) {
-  return Row(
+  return Wrap(crossAxisAlignment: WrapCrossAlignment.center,
     children: [
       ElevatedButton(
         onPressed: enabled ? onPressed : null,
@@ -2770,7 +2746,7 @@ Widget _SubButton(String label, Function() onPressed, [bool enabled = true]) {
 // ignore: non_constant_identifier_names
 Widget _SubLabeledWidget(BuildContext context, String label, Widget child,
     {bool enabled = true}) {
-  return Row(
+  return Wrap(crossAxisAlignment: WrapCrossAlignment.center,
     children: [
       Text(
         '${translate(label)}: ',
@@ -2795,7 +2771,7 @@ Widget _lock(
         children: [
           Flexible(
             child: SizedBox(
-              width: _kCardFixedWidth,
+              width: isWindows ? double.infinity : _kCardFixedWidth,
               child: Card(
                 child: ElevatedButton(
                   child: SizedBox(

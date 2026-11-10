@@ -242,7 +242,11 @@ class _ToolState extends State<_ToolDialog> {
 
   @override
   Widget build(BuildContext context) => AlertDialog(
-        title: Text(_labels[widget.tool.index]),
+        title: Row(children: [
+          Icon(_icons[widget.tool.index], color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(child: Text(_labels[widget.tool.index])),
+        ]),
         content: SizedBox(
             width: 430,
             child: SingleChildScrollView(
