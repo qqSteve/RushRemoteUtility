@@ -179,7 +179,7 @@ class _InstallPageBodyState extends State<_InstallPageBody>
                     children: [
                       Icon(Icons.info_outline_rounded, size: 32)
                           .marginOnly(right: 16),
-                      Column(
+                      Expanded(child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(translate('agreement_tip'))
@@ -190,7 +190,7 @@ class _InstallPageBodyState extends State<_InstallPageBody>
                                 'https://rustdesk.com/privacy.html'),
                             child: Tooltip(
                               message: 'https://rustdesk.com/privacy.html',
-                              child: Row(children: [
+                              child: Wrap(crossAxisAlignment: WrapCrossAlignment.center, children: [
                                 Icon(Icons.launch_outlined, size: 16)
                                     .marginOnly(right: 5),
                                 Text(
@@ -202,17 +202,16 @@ class _InstallPageBodyState extends State<_InstallPageBody>
                             ),
                           ),
                         ],
-                      )
+                      ))
                     ],
                   )).marginSymmetric(vertical: 2 * em),
-              Row(
+              Obx(() => showProgress.value
+                  ? const LinearProgressIndicator()
+                  : const SizedBox.shrink()),
+              Wrap(
+                alignment: WrapAlignment.end,
+                runSpacing: 8,
                 children: [
-                  Expanded(
-                    // NOT use Offstage to wrap LinearProgressIndicator
-                    child: Obx(() => showProgress.value
-                        ? LinearProgressIndicator().marginOnly(right: 10)
-                        : Offstage()),
-                  ),
                   Obx(
                     () => OutlinedButton.icon(
                       icon: Icon(Icons.close_rounded, size: 16),

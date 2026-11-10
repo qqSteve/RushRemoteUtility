@@ -707,9 +707,8 @@ class _FileManagerViewState extends State<FileManagerView> {
             textDirection: isLocal ? TextDirection.ltr : TextDirection.rtl,
             children: [
               Expanded(
-                child: Row(
-                  mainAxisAlignment:
-                      isLocal ? MainAxisAlignment.start : MainAxisAlignment.end,
+                child: Wrap(
+                  alignment: isLocal ? WrapAlignment.start : WrapAlignment.end,
                   children: [
                     MenuButton(
                       tooltip: translate('Home'),
