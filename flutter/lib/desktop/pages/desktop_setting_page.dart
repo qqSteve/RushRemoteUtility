@@ -326,20 +326,11 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
             },
             icon: Icon(Icons.arrow_back),
           ).marginOnly(left: 5),
-        if (isWeb)
-          SizedBox(
-            height: 62,
-            child: Align(
-              alignment: Alignment.center,
-              child: settingsText,
-            ),
-          ).marginOnly(left: 20),
-        if (!isWeb)
-          SizedBox(
-            height: 62,
-            child: settingsText,
-          ).marginOnly(left: 20, top: 10),
-        const Spacer(),
+        Expanded(child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SizedBox(height: 62, child: Align(
+            alignment: Alignment.centerLeft, child: settingsText)),
+        )),
       ],
     );
   }
@@ -1576,31 +1567,15 @@ class _NetworkState extends State<_Network> with AutomaticKeepAliveClientMixin {
       String tooltipMessage = '',
     }) {
       final titleWidget = showTooltip
-          ? Row(
-              children: [
-                Tooltip(
-                  waitDuration: Duration(milliseconds: 1000),
-                  message: translate(tooltipMessage),
-                  child: Row(
-                    children: [
-                      Text(
-                        translate(title),
-                        style: TextStyle(fontSize: _kContentFontSize),
-                      ),
-                      SizedBox(width: 5),
-                      Icon(
-                        Icons.help_outline,
-                        size: 14,
-                        color: Theme.of(context)
-                            .textTheme
-                            .titleLarge
-                            ?.color
-                            ?.withOpacity(0.7),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+          ? Tooltip(
+              waitDuration: const Duration(seconds: 1),
+              message: translate(tooltipMessage),
+              child: Wrap(spacing: 5, crossAxisAlignment: WrapCrossAlignment.center,
+                children: [
+                  Text(translate(title), style: const TextStyle(fontSize: _kContentFontSize)),
+                  Icon(Icons.help_outline, size: 14,
+                    color: Theme.of(context).textTheme.titleLarge?.color?.withOpacity(0.7)),
+                ]),
             )
           : Text(
               translate(title),
@@ -2751,14 +2726,12 @@ Widget _Button(String label, Function() onPressed,
   } else {
     child = Tooltip(message: translate(tip), child: button);
   }
-  return Row(children: [
-    child,
-  ]).marginOnly(left: _kContentHMargin);
+  return Align(alignment: Alignment.centerLeft, child: child).marginOnly(left: _kContentHMargin);
 }
 
 // ignore: non_constant_identifier_names
 Widget _SubButton(String label, Function() onPressed, [bool enabled = true]) {
-  return Row(
+  return Wrap(crossAxisAlignment: WrapCrossAlignment.center,
     children: [
       ElevatedButton(
         onPressed: enabled ? onPressed : null,
@@ -2773,7 +2746,7 @@ Widget _SubButton(String label, Function() onPressed, [bool enabled = true]) {
 // ignore: non_constant_identifier_names
 Widget _SubLabeledWidget(BuildContext context, String label, Widget child,
     {bool enabled = true}) {
-  return Row(
+  return Wrap(crossAxisAlignment: WrapCrossAlignment.center,
     children: [
       Text(
         '${translate(label)}: ',
