@@ -1,8 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter_test/flutter_test.dart';
 import '../lib/desktop/widgets/rush_dashboard.dart';
 
 void main() {
+  testWidgets('access rail keeps rounded rectangle on hover and opens access', (t) async {
+    RushAction? selected;
+    await t.pumpWidget(MaterialApp(home: RushDashboard(
+      hostname: 'Steve', localId: '123', devices: const [], loading: false,
+      pending: const {}, onAction: (action) => selected = action,
+      onDevice: (_, __) {},
+    )));
+    final access = find.byTooltip('Подключения и доступ');
+    final button = find.descendant(of: access, matching: find.byType(TextButton));
+    final shape = t.widget<TextButton>(button).style!.shape!;
+    expect(shape.resolve({MaterialState.hovered}), isA<RoundedRectangleBorder>());
+    final size = t.getSize(button);
+    final mouse = await t.createGesture(kind: PointerDeviceKind.mouse);
+    await mouse.addPointer();
+    await mouse.moveTo(t.getCenter(button));
+    await t.pumpAndSettle();
+    expect(t.getSize(button), size);
+    await t.tap(button);
+    expect(selected, RushAction.legacy);
+    await mouse.removePointer();
+  });
+
   testWidgets('responsive grid preserves tile size and peer action targets',
       (t) async {
     final peers =

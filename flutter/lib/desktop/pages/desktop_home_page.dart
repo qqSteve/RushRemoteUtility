@@ -67,6 +67,9 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     if (dashboard && !showClassic) {
       return _buildBlock(child: RushHome(openClassic: () => setState(() => showClassic = true)));
     }
+    if (isWindows && !isIncomingOnly) {
+      return _buildBlock(child: _accessPage(context, dashboard));
+    }
     final classic = Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -75,12 +78,84 @@ class _DesktopHomePageState extends State<DesktopHomePage>
         if (!isIncomingOnly) Expanded(child: buildRightPane(context)),
       ],
     );
-    return _buildBlock(child: dashboard ? Column(children:[
-      Align(alignment: Alignment.centerLeft, child: TextButton.icon(
-        icon: const Icon(Icons.arrow_back), label: const Text('Мои компьютеры'),
-        onPressed: () => setState(() => showClassic = false))),
-      Expanded(child:classic),
-    ]) : classic);
+    return _buildBlock(child: classic);
+  }
+
+  Widget _accessPage(BuildContext context, bool canReturn) {
+    final outgoingOnly = bind.isOutgoingOnly();
+    final access = ChangeNotifierProvider.value(
+      value: gFFI.serverModel,
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(translate('Your Desktop'),
+                    style: Theme.of(context).textTheme.titleLarge),
+              ),
+              const SizedBox(height: 12),
+              buildPresetPasswordWarning(),
+              buildIDBoard(context),
+              buildPasswordBoard(context),
+              Obx(() => buildHelpCards(stateGlobal.updateUrl.value)),
+              buildPluginEntry(),
+            ],
+          ),
+        ),
+      ),
+    );
+    return Material(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Row(children: [
+              if (canReturn)
+                Tooltip(message: 'Мои компьютеры', child: TextButton(
+                  onPressed: () => setState(() => showClassic = false),
+                  child: const Icon(Icons.arrow_back),
+                )),
+              const SizedBox(width: 8),
+              const Expanded(child: Text('Подключения и доступ',
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700))),
+              if (DesktopSettingPage.tabKeys.isNotEmpty)
+                Tooltip(message: translate('Settings'), child: TextButton(
+                  onPressed: () => DesktopSettingPage.switch2page(DesktopSettingPage.tabKeys.first),
+                  child: const Icon(Icons.settings_outlined),
+                )),
+            ]),
+            const SizedBox(height: 12),
+            Expanded(child: LayoutBuilder(builder: (context, box) {
+              final connection = buildRightPane(context);
+              if (outgoingOnly) {
+                return Column(children: [
+                  Expanded(child: connection),
+                  const RushTools(),
+                ]);
+              }
+              if (box.maxWidth < 760) {
+                return Column(children: [
+                  ConstrainedBox(constraints: BoxConstraints(maxHeight: box.maxHeight * .35),
+                    child: SizedBox(width: double.infinity, child: access)),
+                  Expanded(child: connection),
+                ]);
+              }
+              return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                SizedBox(width: 264, child: access),
+                const SizedBox(width: 12),
+                Expanded(child: connection),
+              ]);
+            })),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildBlock({required Widget child}) {
@@ -176,7 +251,12 @@ class _DesktopHomePageState extends State<DesktopHomePage>
                       ),
                     ),
                     onTap: () => {
-                      if (DesktopSettingPage.tabKeys.isNotEmpty)
+                      if (outgoingOnly)
+                Tooltip(message: 'Диагностика', child: TextButton(
+                  onPressed: () => showRushTool(context, RushTool.diagnose),
+                  child: const Icon(Icons.monitor_heart_outlined),
+                )),
+              if (DesktopSettingPage.tabKeys.isNotEmpty)
                         {
                           DesktopSettingPage.switch2page(
                               DesktopSettingPage.tabKeys[0])
@@ -192,7 +272,7 @@ class _DesktopHomePageState extends State<DesktopHomePage>
     );
   }
 
-  buildRightPane(BuildContext context) {
+  Widget buildRightPane(BuildContext context) {
     return Container(
       color: Theme.of(context).scaffoldBackgroundColor,
       child: ConnectionPage(),

@@ -145,7 +145,7 @@ class _PeerCardState extends State<_PeerCard>
       children: [
         Container(
             decoration: BoxDecoration(
-              color: str2color('${peer.id}${peer.platform}', 0x7f),
+              color: isWindows ? Theme.of(context).cardColor : str2color('${peer.id}${peer.platform}', 0x7f),
               borderRadius: isPortrait
                   ? BorderRadius.circular(_tileRadius)
                   : BorderRadius.only(
@@ -303,7 +303,7 @@ class _PeerCardState extends State<_PeerCard>
               children: [
                 Expanded(
                   child: Container(
-                    color: str2color('${peer.id}${peer.platform}', 0x7f),
+                    color: isWindows ? Theme.of(context).cardColor : str2color('${peer.id}${peer.platform}', 0x7f),
                     child: Row(
                       children: [
                         Expanded(
@@ -313,7 +313,7 @@ class _PeerCardState extends State<_PeerCard>
                               Container(
                                 padding: const EdgeInsets.all(6),
                                 child:
-                                    getPlatformImage(peer.platform, size: 60),
+                                    isWindows ? Image.asset('assets/rush-tower.webp', height: 60, fit: BoxFit.contain) : getPlatformImage(peer.platform, size: 60),
                               ),
                               Row(
                                 children: [

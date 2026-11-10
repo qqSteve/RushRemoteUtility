@@ -281,7 +281,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
       body: _buildBlock(
         children: <Widget>[
           SizedBox(
-            width: _kTabWidth,
+            width: isWindows && MediaQuery.sizeOf(context).width < 800 ? 152 : _kTabWidth,
             child: Column(
               children: [
                 _header(context),
@@ -312,7 +312,7 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
       style: const TextStyle(
         color: _accentColor,
         fontSize: _kTitleFontSize,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w600,
       ),
     );
     return Row(
@@ -358,7 +358,9 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
       return SizedBox(
         width: _kTabWidth,
         height: _kTabHeight,
-        child: InkWell(
+        child: Material(
+          color: selected && isWindows ? const Color(0xff35251a) : Colors.transparent,
+          child: InkWell(
           onTap: () {
             if (selectedTab.value != tab.key) {
               int index = DesktopSettingPage.tabKeys.indexOf(tab.key);
@@ -384,12 +386,12 @@ class _DesktopSettingPageState extends State<DesktopSettingPage>
               translate(tab.label),
               style: TextStyle(
                   color: selected ? _accentColor : null,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w600,
                   fontSize: _kContentFontSize),
             ),
           ]),
         ),
-      );
+      ));
     });
   }
 }
@@ -415,7 +417,7 @@ class _GeneralState extends State<_General> {
       controller: scrollController,
       children: [
         if (!isWeb) service(),
-        theme(),
+        if (!isWindows) theme(),
         _Card(title: 'Language', children: [language()]),
         if (!isWeb) hwcodec(),
         if (!isWeb) audio(context),
@@ -2360,7 +2362,7 @@ class _AboutState extends State<_About> {
       final scrollController = ScrollController();
       return SingleChildScrollView(
         controller: scrollController,
-        child: _Card(title: translate('About RustDesk'), children: [
+        child: _Card(title: isWindows ? 'RushRemoteUtility' : translate('About RustDesk'), children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -2394,7 +2396,7 @@ class _AboutState extends State<_About> {
                     style: linkStyle,
                   ).marginSymmetric(vertical: 4.0)),
               Container(
-                decoration: const BoxDecoration(color: Color(0xFF2c8cff)),
+                decoration: BoxDecoration(color: Theme.of(context).scaffoldBackgroundColor),
                 padding:
                     const EdgeInsets.symmetric(vertical: 24, horizontal: 8),
                 child: SelectionArea(
@@ -2441,7 +2443,7 @@ Widget _Card(
     children: [
       Flexible(
         child: SizedBox(
-          width: _kCardFixedWidth,
+          width: isWindows ? double.infinity : _kCardFixedWidth,
           child: Card(
             child: Column(
               children: [
@@ -2795,7 +2797,7 @@ Widget _lock(
         children: [
           Flexible(
             child: SizedBox(
-              width: _kCardFixedWidth,
+              width: isWindows ? double.infinity : _kCardFixedWidth,
               child: Card(
                 child: ElevatedButton(
                   child: SizedBox(
